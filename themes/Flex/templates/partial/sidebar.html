@@ -1,6 +1,6 @@
 <aside>
   <div>
-    <a href="{{ SITEURL }}/">
+    <a href="/">
       {% if SITELOGO %}
       <img src="{{ SITELOGO }}" alt="{{ SITETITLE }}" title="{{ SITETITLE }}">
       {% else %}
@@ -11,7 +11,7 @@
     </a>
 
     <h1 id="page_title">
-      <a href="{{ SITEURL }}/">{{ SITETITLE }}</a>
+      <a href="/">{{ SITETITLE }}</a>
     </h1>
 
     {% if SITESUBTITLE %}
@@ -20,7 +20,7 @@
 
     {% if PLUGINS %}
     {% if ('tipue_search' in PLUGINS or 'pelican.plugins.tipue_search' in PLUGINS) %}
-    <form class="navbar-search" action="{{ SITEURL }}/search.html" role="search">
+    <form class="navbar-search" action="/search.html" role="search">
       <input type="text" name="q" id="tipue_search_input" placeholder="{{ _('Search...') }}">
     </form>
     {% elif 'pelican.plugins.search' in PLUGINS %}
@@ -54,7 +54,7 @@
         {% for page in pages %}
         <li>
           <a target="{{ get_target(SITEURL) }}"
-            href="{{ SITEURL }}/{{ page.url }}{% if not DISABLE_URL_HASH %}#{{ page.slug }}{% endif %}">
+            href="/{{ page.url }}{% if not DISABLE_URL_HASH %}#{{ page.slug }}{% endif %}">
             {{ page.title }}
           </a>
         </li>
@@ -71,7 +71,7 @@
     {% endif %}
 
     {% if SOCIAL %}
-    {% set solid = ['at', 'envelope', 'mailbox', 'rss'] %}
+    {% set solid = ['at', 'envelope', 'mailbox', 'rss', 'cloud'] %}
     {% set relme = ['at', 'envelope', 'mailbox', 'mastodon'] %}
     <ul class="social">
       {% for name, link in SOCIAL %}
