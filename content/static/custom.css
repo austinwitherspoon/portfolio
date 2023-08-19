@@ -38,3 +38,12 @@ main article :not(pre)>code {
 	background-color: #111;
 	color: #fff
 }
+
+a.btn {
+	background-color: #047;
+	color: #fff;
+}
+
+a.btn:hover {
+	background-color: #000;
+}
