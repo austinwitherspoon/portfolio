@@ -59,7 +59,7 @@ Is there a god?
 
 Normally, you'd need to take a fifteen minute break and then hop onto the development wiki to read all about shlamp connections. Half your afternoon will be spent trying to search for every industry keyword you can think of.
 
-## Code can be documentation, if you let it.
+## Code can be documentation, if you let it
 
 Let's take that example and type hint it:
 <!-- PELICAN_END_SUMMARY -->
@@ -93,7 +93,7 @@ With type hints, VS Code might immediately highlight `for pip in pips:` red, sin
 
 ## Functions are the most important place to type hint
 
-I've already said it, but it's worth repeating - types are automatically inferred whenever possible by your editor!
+I'll say it again - types are automatically inferred whenever possible by your editor!
 
 Take this:
 ```python
@@ -119,15 +119,6 @@ def repeat_five_times(obj:T) -> list[T]:
 test = repeat_five_times("hello") # type: List[str]
 ```
 
-If you've never used type hints, this may be a little overwhelming for a moment, but a `TypeVar` is a variable for the type checker! In this example, we're saying:
-
-> `obj: T` - Hey, obj can be anything! whatever we plug in, remember that value as `T`. 
-
-> `-> list[T]` - Remember whatever was plugged into this function? This returns a list of that!
-
-> `test` is a `List[T]`, and `T` was `"hello"`, so `T` is a `str` and `test` is a `list[str]`
-
-So by using this TypeVar, we're communicating a lot of information that Pylance will *automatically use to deduce types of all sorts of things*!
 
 ### But pylance can never infer the types handed to a function!
 

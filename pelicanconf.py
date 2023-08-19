@@ -1,5 +1,5 @@
 AUTHOR = "Austin Witherspoon"
-SITENAME = "Austin Witherspoon | Portfolio"
+SITENAME = "Austin Witherspoon | Blog"
 SITEURL = "http://austinwitherspoon.com"
 SITETITLE = "Austin Witherspoon"
 SITESUBTITLE = "Filmmaker | Software Developer"
