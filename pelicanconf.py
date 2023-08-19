@@ -43,7 +43,8 @@ DEFAULT_PAGINATION = 10
 # RELATIVE_URLS = True
 
 THEME = "themes/Flex"
-
+PLUGIN_PATHS = ["plugins"]
+PLUGINS = ["summary"]
 
 STATIC_PATHS = ["static"]
 CUSTOM_CSS = "static/custom.css"
