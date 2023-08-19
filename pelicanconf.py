@@ -19,20 +19,22 @@ CATEGORY_FEED_ATOM = "feeds/{slug}.atom.xml"
 FEED_ALL_RSS = "feeds/all.rss.xml"
 CATEGORY_FEED_RSS = "feeds/{slug}.rss.xml"
 
+DISPLAY_PAGES_ON_MENU = False
 # Blogroll
 LINKS = (
-    ("Home", "/"),
-    ("About", "/pages/about.html"),
-    (
-        "my youtube channel",
-        "https://www.youtube.com/channel/UCzHlz1lU53PK531OWRVwatQ",
-    ),
+    ("home", "/"),
+    ("blog", "/blog_index.html"),
 )
+INDEX_SAVE_AS = "blog_index.html"
 
 # Social widget
 SOCIAL = (
-    ("Twitter", "https://twitter.com/ajwitherspoon"),
-    # ('Another social link', '#'),
+    ("youtube", "https://www.youtube.com/channel/UCzHlz1lU53PK531OWRVwatQ"),
+    ("github", "https://github.com/austinwitherspoon"),
+    ("twitter", "https://twitter.com/ajwitherspoon"),
+    ("instagram", "https://www.instagram.com/austinjwitherspoon"),
+    ("mastodon", "https://mastodon.social/@austinwitherspoon"),
+    ("rss", "/feeds/all.atom.xml"),
 )
 
 DEFAULT_PAGINATION = 10
@@ -42,7 +44,7 @@ DEFAULT_PAGINATION = 10
 
 THEME = "themes/Flex"
 PLUGIN_PATHS = ["plugins"]
-PLUGINS = ["summary"]
+PLUGINS = ["summary", "tipue_search"]
 
 STATIC_PATHS = ["static"]
 CUSTOM_CSS = "static/custom.css"
