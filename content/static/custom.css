@@ -1,0 +1,15 @@
+@import url('https://fonts.cdnfonts.com/css/steeltongs');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap');
+
+#page_title {
+	font-family: 'Steel Tongs Esp', sans-serif;
+	font-size: 3.5em;
+	color: #fff;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+#page_subtitle {
+	font-family: 'Montserrat', sans-serif;
+	font-size: 1.1em;
+}
