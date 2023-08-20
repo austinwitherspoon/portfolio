@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.11"
 pelican = {extras = ["markdown"], version = "^4.8.0"}
 beautifulsoup4 = "^4.12.2"
+pelican-search = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.1.0"

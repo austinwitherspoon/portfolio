@@ -23,7 +23,7 @@ aside {
 }
 
 a {
-	color: #4df;
+	color: light-orange;
 }
 
 a:hover {
@@ -31,7 +31,7 @@ a:hover {
 }
 
 .tag-cloud a {
-	background-color: #047;
+	background-color: @orange;
 }
 
 main article :not(pre)>code {
@@ -40,10 +40,19 @@ main article :not(pre)>code {
 }
 
 a.btn {
-	background-color: #047;
+	background-color: @orange;
 	color: #fff;
 }
 
 a.btn:hover {
 	background-color: #000;
+}
+
+.stork-input {
+	background-color: #ccc;
+	border: @orange;
+}
+
+.stork-result.selected {
+	background-color: #047;
 }
