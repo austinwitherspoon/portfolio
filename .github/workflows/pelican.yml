@@ -21,7 +21,7 @@ jobs:
     - name: Set up stork
       run: |
           wget https://files.stork-search.net/releases/v1.6.0/stork-ubuntu-20-04
-          $ chmod +x stork-ubuntu-20-04
+          chmod +x stork-ubuntu-20-04
     - name: Set up Python 3.11
       uses: actions/setup-python@v2
       with:
