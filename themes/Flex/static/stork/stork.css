@@ -43,12 +43,12 @@
 
 .stork a:link,
 .stork a:visited {
-  color: #d9421e;
+  color: white;
 }
 
 .stork .stork-output-visible {
   background: #353434;
-  border: 1px solid #d9421e;
+  border: 1px solid #047;
 }
 
 .stork .stork-message {

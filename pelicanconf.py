@@ -44,7 +44,7 @@ DEFAULT_PAGINATION = 10
 
 THEME = "themes/Flex"
 PLUGIN_PATHS = ["plugins"]
-PLUGINS = ["summary", "tipue_search"]
+PLUGINS = ["summary", "search"]
 
 STATIC_PATHS = ["static"]
 CUSTOM_CSS = "static/custom.css"
@@ -68,3 +68,4 @@ PYGMENTS_STYLE = "emacs"
 PYGMENTS_STYLE_DARK = "monokai"
 
 COPYRIGHT_YEAR = "2023 Austin Witherspoon"
+USE_LESS = True
