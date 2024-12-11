@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Gazoonka Stats</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <style>
+        #container {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .chartContainer {
+            flex: 1 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        #controls {
+            display: flex;
+            gap: 20px;
+            flex-direction: row;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .chart {
+            max-height: 60vh;
+        }
+
+        .note {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading" style="display:none;">Loading...</div>
+    <div id="container">
+        <h1>Gazoonka Stats</h1>
+        <div id="controls">
+            <div>
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" value="2024-12-01">
+            </div>
+            <div>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" value="2024-12-12">
+            </div>
+            <div>
+                <button id="refresh">Refresh Posts</button>
+            </div>
+        </div>
+        <span class="note">NOTE: Data is grouped by hour.</span>
+        <div class="chartContainer">
+            <h3>Posts over time</h3>
+            <canvas class="chart" id="postsChart"></canvas>
+        </div>
+        <div class="chartContainer">
+            <h3>Users involved over time</h3>
+            <canvas class="chart" id="usersChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const postsChartElement = document.getElementById('postsChart');
+        const usersChartElement = document.getElementById('usersChart');
+        let global_posts = null;
+        const batch_size = 100;
+        const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?sort=latest&limit=${batch_size}`;
+        const words = ["gazoonka", "gazoonkas"];
+        const startDateElement = document.getElementById('startDate');
+        const endDateElement = document.getElementById('endDate');
+        const refreshButtonElement = document.getElementById('refresh');
+        const userTimezoneOffset = (new Date("2024-01-01")).getTimezoneOffset() * 60000;
+        const loadingElement = document.getElementById('loading');
+
+        let defaultEndDate = new Date();
+        defaultEndDate.setDate(defaultEndDate.getDate() + 1);
+        let defaultStartDate = new Date(defaultEndDate);
+        defaultStartDate.setDate(defaultStartDate.getDate() - 7);
+
+        endDateElement.value = (defaultEndDate).toISOString().split('T')[0];
+
+        startDateElement.value = (defaultStartDate).toISOString().split('T')[0];
+
+        startDateElement.addEventListener('change', () => {
+            build_post_graph();
+        });
+        endDateElement.addEventListener('change', () => {
+            build_post_graph();
+        });
+        refreshButtonElement.addEventListener('click', () => {
+            get_posts().then(() => {
+                build_post_graph();
+            });
+        });
+
+        async function get_posts() {
+            loadingElement.style.display = 'flex';
+            let uris = [];
+            let posts = [];
+            for (let word of words) {
+                let cursor = null;
+                while (true) {
+                    let request_url = url + (cursor ? `&until=${cursor}` : '') + `&q=${word}`;
+                    const response = await fetch(request_url);
+                    const data = await response.json();
+                    if (data.posts.length == 0) {
+                        break;
+                    }
+                    const last_post = data.posts[data.posts.length - 1];
+                    cursor = last_post.record.createdAt;
+                    for (let post of data.posts) {
+                        let uri = post.uri;
+                        if (uris.includes(uri)) {
+                            continue;
+                        }
+                        posts.push(post);
+                        uris.push(uri);
+                    }
+                    if (posts.length < batch_size) {
+                        break;
+                    }
+                }
+            }
+            console.log(posts);
+            global_posts = posts;
+            loadingElement.style.display = 'none';
+        }
+
+        function date_to_hours_string(date) {
+            let month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+            let day = date.getUTCDate().toString().padStart(2, '0');
+            let hour = date.getUTCHours().toString().padStart(2, '0');
+            return `${date.getUTCFullYear()}-${month}-${day} ${hour}:00`;
+        }
+
+
+        function build_post_graph() {
+
+            global_posts.sort((a, b) => {
+                return new Date(a.record.createdAt) - new Date(b.record.createdAt);
+            });
+
+            let posts_by_hour = {};
+
+            let earliest_time = null;
+            let latest_time = null;
+
+            for (let post of global_posts) {
+                let date = new Date(post.record.createdAt);
+                // set everything after hour to 0
+                date.setUTCMinutes(0);
+                date.setUTCSeconds(0);
+                date.setUTCMilliseconds(0);
+
+                if (!earliest_time || date < earliest_time) {
+                    earliest_time = date;
+                }
+                if (!latest_time || date > latest_time) {
+                    latest_time = date;
+                }
+
+                let key = date_to_hours_string(date);
+                if (posts_by_hour[key]) {
+                    posts_by_hour[key] += 1;
+                } else {
+                    posts_by_hour[key] = 1;
+                }
+            }
+
+            // fill in the gaps with 0s
+            let start = new Date(earliest_time);
+            while (true) {
+                let key = date_to_hours_string(start);
+                if (!posts_by_hour[key]) {
+                    posts_by_hour[key] = 0;
+                }
+                start.setUTCHours(start.getUTCHours() + 1);
+                if (start > latest_time) {
+                    break;
+                }
+            }
+
+            posts_by_hour = Object.keys(posts_by_hour).sort().reduce(
+                (obj, key) => {
+                    obj[key] = posts_by_hour[key];
+                    return obj;
+                }, {}
+            );
+
+            // reduce to just data between the start and end date
+            let start_date = new Date(startDateElement.value);
+            let end_date = new Date(endDateElement.value);
+            start_date.setUTCHours(0);
+            start_date.setUTCMinutes(0);
+            start_date.setUTCSeconds(0);
+            start_date.setUTCMilliseconds(0);
+            end_date.setUTCDate(end_date.getUTCDate() + 1);
+            end_date.setUTCHours(0);
+            end_date.setUTCMinutes(0);
+            end_date.setUTCSeconds(0);
+            end_date.setUTCMilliseconds(0);
+
+            let start_hour = date_to_hours_string(start_date);
+            let end_hour = date_to_hours_string(end_date);
+
+            posts_by_hour = Object.keys(posts_by_hour).sort().reduce(
+                (obj, key) => {
+                    if (key >= start_hour && key <= end_hour) {
+                        obj[key] = posts_by_hour[key];
+                    }
+                    return obj;
+                }, {}
+            );
+
+
+            postsChart.data.labels = Object.keys(posts_by_hour);
+            postsChart.data.datasets[0].data = Object.values(posts_by_hour);
+            postsChart.update();
+
+            let users_earliest_post = {};
+            for (let post of global_posts) {
+                let date = new Date(post.record.createdAt);
+                let key = date_to_hours_string(date);
+                if (!users_earliest_post[post.author.did] || date < users_earliest_post[post.author.did]) {
+                    users_earliest_post[post.author.did] = date;
+                }
+            }
+
+            let users_by_hour = {};
+
+            let start_users = new Date(earliest_time);
+            while (true) {
+                let key = date_to_hours_string(start_users);
+                let count = 0;
+                for (let user in users_earliest_post) {
+                    if (users_earliest_post[user] <= start_users) {
+                        count += 1;
+                    }
+                }
+                users_by_hour[key] = count;
+                start_users.setHours(start_users.getHours() + 1);
+                if (start_users > latest_time) {
+                    break;
+                }
+            }
+
+
+            users_by_hour = Object.keys(users_by_hour).sort().reduce(
+                (obj, key) => {
+                    obj[key] = users_by_hour[key];
+                    return obj;
+                }, {}
+            );
+
+            users_by_hour = Object.keys(users_by_hour).sort().reduce(
+                (obj, key) => {
+                    if (key >= start_hour && key <= end_hour) {
+                        obj[key] = users_by_hour[key];
+                    }
+                    return obj;
+                }, {}
+            );
+
+            usersChart.data.labels = Object.keys(users_by_hour);
+            usersChart.data.datasets[0].data = Object.values(users_by_hour);
+            usersChart.update();
+
+        }
+
+
+        const postsChart = new Chart(postsChartElement, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Posts',
+                    data: {},
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const usersChart = new Chart(usersChartElement, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Users',
+                    data: {},
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        get_posts().then(() => {
+            build_post_graph();
+        });
+
+        // get_posts();
+    </script>
+
+
+
+
+</body>
+
+</html>

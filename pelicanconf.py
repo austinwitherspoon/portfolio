@@ -46,7 +46,12 @@ THEME = "themes/Flex"
 PLUGIN_PATHS = ["plugins"]
 PLUGINS = ["summary", "search"]
 
-STATIC_PATHS = ["static"]
+STATIC_PATHS = ["static", "extra"]
+EXTRA_PATH_METADATA = {
+    "extra/index.html": {"path": "index.html"},
+    "extra/gazoonkas.html": {"path": "gazoonkas.html"},
+}
+ARTICLE_EXCLUDES = ['static', "extra"]
 CUSTOM_CSS = "static/custom.css"
 
 MAIN_MENU = True
