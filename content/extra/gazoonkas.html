@@ -56,6 +56,12 @@
             font-size: 2em;
             z-index: 1000;
         }
+
+        #wordOptions {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
     </style>
 </head>
 
@@ -72,11 +78,18 @@
                 <label for="endDate">End Date:</label>
                 <input type="date" id="endDate" value="2024-12-12">
             </div>
+            <div id="wordOptions">
+                <span><label for="showGazoonkas">Show Gazoonkas:</label>
+                    <input type="checkbox" id="showGazoonkas" checked>
+                </span><span>
+                    <label for="showGazoongas">Show Gazoongas:</label>
+                    <input type="checkbox" id="showGazoongas" unchecked></span>
+            </div>
             <div>
                 <button id="refresh">Refresh Posts</button>
             </div>
         </div>
-        <span class="note">NOTE: Data is grouped by hour.</span>
+        <span class="note">NOTE: Data is grouped by hour. Times are UTC.</span>
         <div class="chartContainer">
             <h3>Posts over time</h3>
             <canvas class="chart" id="postsChart"></canvas>
@@ -95,12 +108,13 @@
         let global_posts = null;
         const batch_size = 100;
         const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?sort=latest&limit=${batch_size}`;
-        const words = ["gazoonka", "gazoonkas"];
         const startDateElement = document.getElementById('startDate');
         const endDateElement = document.getElementById('endDate');
         const refreshButtonElement = document.getElementById('refresh');
         const userTimezoneOffset = (new Date("2024-01-01")).getTimezoneOffset() * 60000;
         const loadingElement = document.getElementById('loading');
+        const showGazoonkasElement = document.getElementById('showGazoonkas');
+        const showGazoongasElement = document.getElementById('showGazoongas');
 
         let defaultEndDate = new Date();
         defaultEndDate.setDate(defaultEndDate.getDate() + 1);
@@ -117,6 +131,16 @@
         endDateElement.addEventListener('change', () => {
             build_post_graph();
         });
+        showGazoonkasElement.addEventListener('click', () => {
+            get_posts().then(() => {
+                build_post_graph();
+            });
+        });
+        showGazoongasElement.addEventListener('click', () => {
+            get_posts().then(() => {
+                build_post_graph();
+            });
+        });
         refreshButtonElement.addEventListener('click', () => {
             get_posts().then(() => {
                 build_post_graph();
@@ -127,28 +151,36 @@
             loadingElement.style.display = 'flex';
             let uris = [];
             let posts = [];
-            for (let word of words) {
-                let cursor = null;
-                while (true) {
-                    let request_url = url + (cursor ? `&until=${cursor}` : '') + `&q=${word}`;
-                    const response = await fetch(request_url);
-                    const data = await response.json();
-                    if (data.posts.length == 0) {
-                        break;
+            let words = [];
+            if (showGazoonkasElement.checked) {
+                words.push('gazoonka');
+                words.push('gazoonkas');
+            }
+            if (showGazoongasElement.checked) {
+                words.push('gazoonga');
+                words.push('gazoongas');
+            }
+            let query = words.join('|');
+            let cursor = null;
+            while (true) {
+                let request_url = url + (cursor ? `&until=${cursor}` : '') + `&q=${query}`;
+                const response = await fetch(request_url);
+                const data = await response.json();
+                if (data.posts.length == 0) {
+                    break;
+                }
+                const last_post = data.posts[data.posts.length - 1];
+                cursor = last_post.record.createdAt;
+                for (let post of data.posts) {
+                    let uri = post.uri;
+                    if (uris.includes(uri)) {
+                        continue;
                     }
-                    const last_post = data.posts[data.posts.length - 1];
-                    cursor = last_post.record.createdAt;
-                    for (let post of data.posts) {
-                        let uri = post.uri;
-                        if (uris.includes(uri)) {
-                            continue;
-                        }
-                        posts.push(post);
-                        uris.push(uri);
-                    }
-                    if (posts.length < batch_size) {
-                        break;
-                    }
+                    posts.push(post);
+                    uris.push(uri);
+                }
+                if (posts.length < batch_size) {
+                    break;
                 }
             }
             console.log(posts);
