@@ -173,10 +173,6 @@
                 }
                 const last_post = data.posts[data.posts.length - 1];
                 cursor = last_post.record.createdAt;
-                let cursor_date = new Date(cursor);
-                if (cursor_date < earliestDate) {
-                    break;
-                }
                 for (let post of data.posts) {
                     let uri = post.uri;
                     if (uris.includes(uri)) {
@@ -188,6 +184,10 @@
                     }
                     posts.push(post);
                     uris.push(uri);
+                }
+                let cursor_date = new Date(cursor);
+                if (cursor_date < earliestDate) {
+                    break;
                 }
                 if (posts.length < batch_size) {
                     break;
