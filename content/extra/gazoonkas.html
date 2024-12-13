@@ -89,7 +89,8 @@
                 <button id="refresh">Refresh Posts</button>
             </div>
         </div>
-        <span class="note">NOTE: Data is grouped by hour. Times are UTC.</span>
+        <span class="note">NOTE: Data is grouped by hour. Times are UTC.<br />Posts before December 7th, 2024 are
+            excluded.</span>
         <div class="chartContainer">
             <h3>Posts over time</h3>
             <canvas class="chart" id="postsChart"></canvas>
@@ -115,6 +116,7 @@
         const loadingElement = document.getElementById('loading');
         const showGazoonkasElement = document.getElementById('showGazoonkas');
         const showGazoongasElement = document.getElementById('showGazoongas');
+        const earliestDate = new Date("2024-12-07");
 
         let defaultEndDate = new Date();
         defaultEndDate.setDate(defaultEndDate.getDate() + 1);
@@ -171,10 +173,18 @@
                 }
                 const last_post = data.posts[data.posts.length - 1];
                 cursor = last_post.record.createdAt;
+                let cursor_date = new Date(cursor);
+                if (cursor_date < earliestDate) {
+                    break;
+                }
                 for (let post of data.posts) {
                     let uri = post.uri;
                     if (uris.includes(uri)) {
                         continue;
+                    }
+                    let date = new Date(post.record.createdAt);
+                    if (date < earliestDate) {
+                        break;
                     }
                     posts.push(post);
                     uris.push(uri);
@@ -204,7 +214,7 @@
 
             let posts_by_hour = {};
 
-            let earliest_time = null;
+            let earliest_time = earliestDate;
             let latest_time = null;
 
             for (let post of global_posts) {
