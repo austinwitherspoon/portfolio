@@ -178,7 +178,7 @@
         const canvas = document.getElementById('previewCanvas');
         const ctx = canvas.getContext('2d');
 
-        document.getElementById('blueskyUsername').addEventListener('input', function () {
+        /*document.getElementById('blueskyUsername').addEventListener('input', function () {
             // lowercase and remove @
             const username = this.value.toLowerCase().replace('@', '');
             if (username) {
@@ -201,7 +201,7 @@
                     })
                     .catch(error => console.error('Error:', error));
             }
-        });
+        }); */
 
         document.getElementById('uploadImage').addEventListener('change', function () {
             const file = this.files[0];
