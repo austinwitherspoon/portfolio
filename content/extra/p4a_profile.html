@@ -113,7 +113,7 @@
                         <div class="field">
                             <label class="label">Bluesky Username</label>
                             <div class="control">
-                                <input class="input" type="text" id="blueskyUsername"
+                                <input class="input" type="text" type="text" autocorrect="off" autocapitalize="none" id="blueskyUsername"
                                     placeholder="Enter your Bluesky username">
                             </div>
                         </div>
@@ -179,7 +179,8 @@
         const ctx = canvas.getContext('2d');
 
         document.getElementById('blueskyUsername').addEventListener('input', function () {
-            const username = this.value;
+            // lowercase and remove @
+            const username = this.value.toLowerCase().replace('@', '');
             if (username) {
                 fetch(`https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${username}`)
                     .then(response => response.json())
@@ -227,6 +228,7 @@
                 if (profile_source) {
                     const img = new Image();
                     img.src = profile_source;
+                    img.crossOrigin = "Anonymous"; // Handle CORS for external images
                     img.onload = function () {
                         ctx.drawImage(img, 0, 0, 512, 512);
                         if (profile_frame) {
