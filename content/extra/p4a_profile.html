@@ -110,7 +110,7 @@
                 <div class="profileSource">
                     <label class="label">Profile Source</label>
                     <div class="profileSourceOptions">
-                        <div class="field">
+                        <!-- <div class="field">
                             <label class="label">Bluesky Username</label>
                             <div class="control">
                                 <input class="input" type="text" type="text" autocorrect="off" autocapitalize="none" id="blueskyUsername"
@@ -120,7 +120,7 @@
 
                         <div id="or">
                             <label class="label">OR</label>
-                        </div>
+                        </div> -->
 
                         <div class="field">
                             <label class="label">Upload Image</label>
@@ -185,8 +185,19 @@
                 fetch(`https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${username}`)
                     .then(response => response.json())
                     .then(data => {
-                        profile_source = data.avatar;
-                        drawImage();
+                        let raw_source = data.avatar;
+                        // download contents so we don't have cors issues
+                        fetch(raw_source)
+                            .then(res => res.blob())
+                            .then(blob => {
+                                const reader = new FileReader();
+                                reader.onload = function (e) {
+                                    profile_source = e.target.result;
+                                    drawImage();
+                                };
+                                reader.readAsDataURL(blob);
+                            })
+                            .catch(error => console.error('Error:', error));
                     })
                     .catch(error => console.error('Error:', error));
             }
