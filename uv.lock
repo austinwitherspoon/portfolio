@@ -255,7 +255,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "flake8", specifier = ">=7.1.1" },
-    { name = "ruff" },
+    { name = "ruff", specifier = ">=0.9.6" },
 ]
 
 [[package]]
