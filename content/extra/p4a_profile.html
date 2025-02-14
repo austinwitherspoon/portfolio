@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>P4A Profile Picture Generator</title>
+    <link rel="stylesheet" href="./static/custom.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <style>
+        @import "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css";
+
+        html,
+        body {
+            background-color: rgb(22, 30, 39);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profileSource {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .profileSource label {
+            margin-bottom: 5px;
+        }
+
+        .profileSourceOptions {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profileSourceOptions .field {
+            flex-grow: 1;
+        }
+
+        .profileSourceOptions #or {
+            flex-grow: 0;
+            padding: .5rem;
+            text-align: center;
+        }
+
+
+        .scrollable-frames {
+            overflow-x: auto;
+            white-space: nowrap;
+            overflow-y: hidden;
+            height: 130;
+        }
+
+        .scrollable-frames .column {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .scrollable-frames .column input[type="radio"] {
+            display: none;
+        }
+
+        .scrollable-frames .column input[type="radio"]:checked+figure {
+            border: 2px solid yellow;
+        }
+
+        #previewCanvas {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            margin: 1rem;
+        }
+
+        @media screen and (min-width: 768px) {
+            .profileSourceOptions {
+                flex-direction: row;
+            }
+
+            .profileSourceOptions #or {
+                flex-grow: 0;
+                padding: 2rem;
+                text-align: center;
+            }
+
+            .scrollable-frames {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section class="section">
+        <div class="container" id="container">
+            <h1 class="title">P4A Profile Picture Generator</h1>
+            <form id="profileForm">
+
+                <div class="profileSource">
+                    <label class="label">Profile Source</label>
+                    <div class="profileSourceOptions">
+                        <div class="field">
+                            <label class="label">Bluesky Username</label>
+                            <div class="control">
+                                <input class="input" type="text" id="blueskyUsername"
+                                    placeholder="Enter your Bluesky username">
+                            </div>
+                        </div>
+
+                        <div id="or">
+                            <label class="label">OR</label>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Upload Image</label>
+                            <div class="control">
+                                <input class="input" type="file" id="uploadImage" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Select Picture Frame</label>
+                    <div class="control scrollable-frames">
+                        <div class="columns is-mobile">
+                            <div class="column is-narrow">
+                                <label class="radio">
+                                    <input type="radio" name="frame" value="../static/Profile_Frame_Lilac.png">
+                                    <figure class="image is-128x128">
+                                        <img src="../static/Profile_Frame_Lilac.png" alt="Profile Frame Lilac">
+                                    </figure>
+                                </label>
+                            </div>
+                            <div class="column is-narrow">
+                                <label class="radio">
+                                    <input type="radio" name="frame" value="../static/Profile_Frame_Medium_Lilac.png">
+                                    <figure class="image is-128x128">
+                                        <img src="../static/Profile_Frame_Medium_Lilac.png"
+                                            alt="Profile Frame Medium Lilac">
+                                    </figure>
+                                </label>
+                            </div>
+                            <div class="column is-narrow">
+                                <label class="radio">
+                                    <input type="radio" name="frame" value="../static/Profile_Frame_Lime.png">
+                                    <figure class="image is-128x128">
+                                        <img src="../static/Profile_Frame_Lime.png" alt="Profile Frame Lime">
+                                    </figure>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="section">
+                <h2 class="subtitle">Preview</h2>
+                <canvas id="previewCanvas" width="512" height="512" style="border: 1px solid #000;"></canvas>
+                <button id="downloadButton" class="button is-primary">Download Image</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let profile_source = null;
+        let profile_frame = null;
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        document.getElementById('blueskyUsername').addEventListener('input', function () {
+            const username = this.value;
+            if (username) {
+                fetch(`https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${username}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        profile_source = data.avatar;
+                        drawImage();
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+
+        document.getElementById('uploadImage').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profile_source = e.target.result;
+                    drawImage();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.querySelectorAll('input[name="frame"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                profile_frame = this.value;
+                drawImage();
+            });
+        });
+
+        document.getElementById('downloadButton').addEventListener('click', function () {
+            const link = document.createElement('a');
+            link.download = 'profile_picture.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+
+        function drawImage() {
+            if (profile_source || profile_frame) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+                ctx.clip();
+                if (profile_source) {
+                    const img = new Image();
+                    img.src = profile_source;
+                    img.onload = function () {
+                        ctx.drawImage(img, 0, 0, 512, 512);
+                        if (profile_frame) {
+                            const frameImg = new Image();
+                            frameImg.src = profile_frame;
+                            frameImg.onload = function () {
+                                ctx.drawImage(frameImg, 0, 0, 512, 512);
+                            };
+                        }
+                    };
+                }
+
+                if (profile_frame) {
+                    const frameImg = new Image();
+                    frameImg.src = profile_frame;
+                    frameImg.onload = function () {
+                        ctx.drawImage(frameImg, 0, 0, 512, 512);
+                    };
+                }
+                ctx.restore();
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    </script>
+</body>
+
+</html>
