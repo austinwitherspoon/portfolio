@@ -18,12 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: install rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-    - name: install stork
-      run: cargo install stork-search --locked
     - name: Set up Python 3.11
       uses: actions/setup-python@v2
       with:
