@@ -51,6 +51,9 @@ EXTRA_PATH_METADATA = {
     "extra/index.html": {"path": "index.html"},
     "extra/gazoonkas.html": {"path": "gazoonkas.html"},
     "extra/p4a_profile.html": {"path": "p4a_profile.html"},
+    "extra/tb_fighters_canada_profile.html": {
+        "path": "tb_fighters_canada_profile.html"
+    },
 }
 ARTICLE_EXCLUDES = ['static', "extra"]
 CUSTOM_CSS = "static/custom.css"
